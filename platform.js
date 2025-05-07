@@ -30,7 +30,7 @@ class Platform {
         this.contactY = ball.position.y;
         return(
             this.x < ball.position.x &&
-            this.x + this.w > ball.position.x + ball.size*2 &&
+            this.x + this.w > ball.position.x + ball.size * 2 &&
             ball.position.y + ball.size >= this.y &&
             ball.position.y + ball.size <= this.y + this.h
         );

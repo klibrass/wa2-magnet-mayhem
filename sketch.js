@@ -6,35 +6,39 @@ let attractorOnClick = -1;
 let inGame = false; // Temporary, to be replaced with timer.
 
 function preload() {
-  imgCheckpoint = loadImage('/assets/checkpoint.png');
+    imgCheckpoint = loadImage('/assets/checkpoint.png');
 }
 
 function setup() {
-  createCanvas(800, 600);
+    createCanvas(800, 600);
 
-  ball = new Ball(120, 50, 20);
-  platform_1_1 = new Platform(0, 300, 800, 300);
-  checkpoint_1 = new Checkpoint(740, 250, 50, 50);
+    ball = new Ball(120, 50, 20);
+    platform_1_1 = new Platform(0, 300, 800, 300);
+    checkpoint_1 = new Checkpoint(740, 250, 50, 50);
+
+    buttonStart = new Button(width/2, height/2, 180 * 0.7, 60 * 0.7, "START"); // Change the parameters
 }
 
 function mouseClicked() {
-  if (inGame) {
-    magnets.push(new Magnet(mouseX, mouseY, attractorOnClick, 20));
-  }
+    if (inGame) {
+        magnets.push(new Magnet(mouseX, mouseY, attractorOnClick, 20));
+    }
 }
 
 function draw() {
-  background(220, 240, 220);
+    background(220, 240, 220);
 
-  magnetColor = attractorOnClick == 1 ? [0, 0, 255] : [255, 0, 0];
-  magnetColorHover = attractorOnClick == 1 ? [0, 0, 255, 128] : [255, 0, 0, 128];
+    magnetColor = attractorOnClick == 1 ? [0, 0, 255] : [255, 0, 0];
+    magnetColorHover = attractorOnClick == 1 ? [0, 0, 255, 128] : [255, 0, 0, 128];
   
-  if (inGame) {
-    handleForces();
-    drawHoverEffect();
-    handleBall();
-    handleKeyPress();
-  }
+    if (!inGame) {
+        startMenu();
+    } else if (inGame) {
+        handleForces();
+        drawHoverEffect();
+        handleBall();
+        handleKeyPress();
+    }
 }
 
 function drawHoverEffect() {
