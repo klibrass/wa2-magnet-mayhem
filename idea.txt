@@ -1,0 +1,10 @@
+- panorama (parallax)
+- just a simple game involving physics
+    - a round where you have to attract things to you but some of those things minus your points
+    - a round with water (drag)
+    - a round with ice 
+- gravity system
+- camera system (this will be hard to implement)
+- ACTUAL imagery
+
+i think this is way too ambitious but it gives me context to work with lol
