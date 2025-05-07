@@ -3,6 +3,7 @@ let magnets = [];
 let magnetColor;
 let magnetColorHover;
 let attractorOnClick = -1;
+let inGame = false; // Temporary, to be replaced with timer.
 
 function preload() {
   imgCheckpoint = loadImage('/assets/checkpoint.png');
@@ -16,44 +17,60 @@ function setup() {
   checkpoint_1 = new Checkpoint(740, 250, 50, 50);
 }
 
+function mouseClicked() {
+  if (inGame) {
+    magnets.push(new Magnet(mouseX, mouseY, attractorOnClick, 20));
+  }
+}
+
 function draw() {
   background(220, 240, 220);
 
-  gravity = createVector(0, 3);
-  ball.applyForce(gravity);
-
   magnetColor = attractorOnClick == 1 ? [0, 0, 255] : [255, 0, 0];
-  magnetColorHover = color(magnetColor).setAlpha(128);
+  magnetColorHover = attractorOnClick == 1 ? [0, 0, 255, 128] : [255, 0, 0, 128];
+  
+  if (inGame) {
+    handleForces();
+    drawHoverEffect();
+    handleBall();
+    handleKeyPress();
+  }
+}
 
-  // let drag = player.velocity.copy();
-  // let dragMag = player.velocity.mag() * player.velocity.mag() * 0.99;
-  // drag.normalize();
-  // drag.mult(-dragMag);
-  // player.applyForce(drag);
+function drawHoverEffect() {
+  push();
+  fill(magnetColorHover);
+  noStroke();
+  circle(mouseX, mouseY, 20);
+  pop();
+}
 
+function handleBall() {
   ball.show();
   ball.update();
   ball.outOfFrame();
 
-  checkpoint_1.show();
-  checkpoint_1.contains(ball);
-  platform_1_1.show();
-  if (platform_1_1.isBallOnTop(ball)) {
-    platform_1_1.applyForces(ball);
-  }
-
   fill(10, 180, 70);
-  textSize(20);
-  text("Velocity: " + ball.velocity.mag(), 200, 50);
+  textFont('Cambria Math', 20);
+  textStyle(ITALIC);
+  text("v: " + floor(ball.velocity.mag()) + " unit/s", ball.position.x, ball.position.y + 40);
+}
 
-  if (keyIsPressed && keyCode == 68) {
-    ball.applyForce(createVector(2.4, 0));
-  }
-  if (keyIsPressed && keyCode == 87) {
-    ball.isSnapped = false;
-    ball.applyForce(createVector(0, 4.4))
+function handleForces() {
+  for(let magnet of magnets) {
+    magnet.show();
+    if(magnet.attractionStatus === 1) {
+      ball.applyForce(magnet.calculateAttraction(ball));
+    } else {
+      ball.applyForce(magnet.calculateRepulsion(ball));
+    }
   }
 
+  gravity = createVector(0, 3);
+  ball.applyForce(gravity);
+}
+
+function handleKeyPress() {
   if (keyIsDown && keyCode == 65) {
     attractorOnClick = 1;
   }

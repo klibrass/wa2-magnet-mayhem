@@ -2,7 +2,7 @@ class Ball {
     constructor(x, y, size) {
         this.position = createVector(x, y);
         this.size = size;
-        this.mass = size/2;
+        this.mass = size / 2;
         this.velocity = createVector(0, 0);
         this.acceleration = createVector(0, 0);
         this.isSnapped = false;
@@ -28,7 +28,7 @@ class Ball {
     }
 
     outOfFrame() {
-        if (this.position.y > height) {
+        if (this.position.y > height || this.position.y < 0 - this.size) {
             this.position = createVector(120, 50);
             this.velocity = createVector(0, 0);
         }

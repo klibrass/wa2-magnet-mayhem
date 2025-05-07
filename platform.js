@@ -9,9 +9,9 @@ class Platform {
             material == "rubber" ? 2 :
             0.65;
         this.dampCo =
-            material == "ice" ? 0.41 :
-            material == "rubber" ? 0.22 :
-            0.36;
+            material == "ice" ? 0.37 :
+            material == "rubber" ? 0.20 :
+            0.28;
         this.materialColor =
             material == "ice" ? [150, 170, 200] :
             material == "rubber" ? [30, 30, 30] :
@@ -37,18 +37,23 @@ class Platform {
     }
 
     applyForces(ball) {
+        // Apply friction
         let friction = ball.velocity.copy();
         friction.normalize();
         friction.mult(-this.fricCo);
         ball.applyForce(friction);
 
+        // Apply damping
         let dampThreshold = 2.4 - this.dampCo;
         if (abs(ball.velocity.y) > dampThreshold) {
             ball.velocity.mult(1, -0.95 + this.dampCo)
-        } else {
+        } else if (ball.velocity.y >= 0) {
             ball.velocity.y = 0;
         }
-        ball.isSnapped = true;
-        if (ball.isSnapped) ball.position.y = this.y - ball.size;
+        
+        // Snap ball to platform
+        if (ball.velocity.y >= 0) {
+            ball.position.y = this.y - ball.size;
+        }
     }
 }
