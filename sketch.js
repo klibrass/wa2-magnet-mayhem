@@ -1,9 +1,19 @@
-function setup() {
-  createCanvas(800, 480);
+let round = 1;
+let magnets = []; 
+let magnetColor;
+let magnetColorHover;
+let attractorOnClick = -1;
 
-  ball = new Ball(50, 50, 20);
-  platform_1_1 = new Platform(0, 200, 800, 280);
-  portal_1 = new Portal(740, 160, 2);
+function preload() {
+  imgCheckpoint = loadImage('/assets/checkpoint.png');
+}
+
+function setup() {
+  createCanvas(800, 600);
+
+  ball = new Ball(120, 50, 20);
+  platform_1_1 = new Platform(0, 300, 800, 300);
+  checkpoint_1 = new Checkpoint(740, 250, 50, 50);
 }
 
 function draw() {
@@ -11,6 +21,9 @@ function draw() {
 
   gravity = createVector(0, 3);
   ball.applyForce(gravity);
+
+  magnetColor = attractorOnClick == 1 ? [0, 0, 255] : [255, 0, 0];
+  magnetColorHover = color(magnetColor).setAlpha(128);
 
   // let drag = player.velocity.copy();
   // let dragMag = player.velocity.mag() * player.velocity.mag() * 0.99;
@@ -22,18 +35,33 @@ function draw() {
   ball.update();
   ball.outOfFrame();
 
-  portal_1.show();
-
-  fill(10, 180, 70);
-  textSize(20);
-  text("Velocity: " + round(ball.velocity.mag(), 2), 200, 50);
-
+  checkpoint_1.show();
+  checkpoint_1.contains(ball);
   platform_1_1.show();
   if (platform_1_1.isBallOnTop(ball)) {
     platform_1_1.applyForces(ball);
   }
 
+  fill(10, 180, 70);
+  textSize(20);
+  text("Velocity: " + ball.velocity.mag(), 200, 50);
+
   if (keyIsPressed && keyCode == 68) {
-    ball.applyForce(createVector(2, 1));
+    ball.applyForce(createVector(2.4, 0));
   }
+  if (keyIsPressed && keyCode == 87) {
+    ball.isSnapped = false;
+    ball.applyForce(createVector(0, 4.4))
+  }
+
+  if (keyIsDown && keyCode == 65) {
+    attractorOnClick = 1;
+  }
+  if (keyIsDown && keyCode == 82) {
+    attractorOnClick = -1;
+  }
+}
+
+function toNextRound() {
+  round += 1;
 }

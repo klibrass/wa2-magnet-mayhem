@@ -9,14 +9,18 @@ class Platform {
             material == "rubber" ? 2 :
             0.65;
         this.dampCo =
-            material == "ice" ? 0.31 :
+            material == "ice" ? 0.41 :
             material == "rubber" ? 0.22 :
-            0.25;
+            0.36;
+        this.materialColor =
+            material == "ice" ? [150, 170, 200] :
+            material == "rubber" ? [30, 30, 30] :
+            [255, 255, 255]
     }
 
     show() {
         push();
-        fill(255);
+        fill(this.materialColor);
         noStroke();
         rect(this.x, this.y, this.w, this.h);
         pop();
@@ -44,6 +48,7 @@ class Platform {
         } else {
             ball.velocity.y = 0;
         }
-        ball.position.y = this.y - ball.size;
+        ball.isSnapped = true;
+        if (ball.isSnapped) ball.position.y = this.y - ball.size;
     }
 }
