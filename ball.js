@@ -29,8 +29,7 @@ class Ball {
 
     outOfFrame() {
         if (this.position.y > height || this.position.y < 0 - this.size) {
-            this.position = createVector(120, 50);
-            this.velocity = createVector(0, 0);
+            reloadCurrentRound();
         }
     }
 }
