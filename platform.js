@@ -6,7 +6,7 @@ class Platform {
         this.h = h;
         this.fricCo =
             material == "ice" ? 0 :
-            material == "rubber" ? 2 :
+            material == "rubber" ? 1.2 :
             0.65;
         this.dampCo =
             material == "ice" ? 0.37 :
@@ -29,8 +29,8 @@ class Platform {
     isBallOnTop(ball) {
         this.contactY = ball.position.y;
         return(
-            this.x < ball.position.x &&
-            this.x + this.w > ball.position.x + ball.size * 2 &&
+            this.x < ball.position.x - ball.size * 0.125 &&
+            this.x + this.w > ball.position.x + ball.size * 0.125 &&
             ball.position.y + ball.size >= this.y &&
             ball.position.y + ball.size <= this.y + this.h
         );

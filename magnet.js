@@ -1,7 +1,9 @@
+let magnetStrengthCo = 1;
+
 class Magnet {
     constructor(x, y, attractionStatus, radius, G = 1) {
         this.position = createVector(x, y);
-        this.G = G;
+        this.G = G * magnetStrengthCo;
         this.attractionStatus = attractionStatus;
         this.color = magnetColor;
         this.radius = radius;
