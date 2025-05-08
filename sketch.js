@@ -32,6 +32,7 @@ function setup() {
     buttonStart = new Button(width * 0.5, height * 0.5, 160 * 0.5, 60 * 0.5, 160 * 0.6, 60 * 0.6, "START"); // Change the parameters
     buttonInstructions = new Button(width * 0.5, height * 0.65, 230 * 0.5, 60 * 0.5, 230 * 0.6, 60 * 0.6, "INSTRUCTIONS");
     buttonStartMenu = new Button(width - 120, height - 60, 160 * 0.5, 60 * 0.5, 160 * 0.55, 60 * 0.55, "BACK");
+    buttonReload = new Button(width - 115, 55, 170 * 0.5, 50 * 0.5, 170 * 0.55, 50 * 0.55, "RESTART");
 }
 
 function draw() {
@@ -44,6 +45,9 @@ function draw() {
         if (preInGame == "start") startMenu();
         if (preInGame == "instructions") instructionsMenu();
     } else if (inGame) {
+        buttonReload.show();
+        handleButtonHover(buttonReload);
+
         displayMagnetNumber();
         handleForces();
         drawHoverEffect();
@@ -58,7 +62,12 @@ function draw() {
 
 function mouseClicked() {
     if (inGame) {
-        handleMagnetAddition();
+        if (buttonReload.containsMouse()) {
+            reloadCurrentRound();
+            cursor(ARROW);
+        } else {
+            handleMagnetAddition();
+        }
     } else {
         if (buttonStart.containsMouse()) {
             loadRound1();
