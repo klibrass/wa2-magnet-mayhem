@@ -6,5 +6,11 @@
 - gravity system
 - camera system (this will be hard to implement)
 - ACTUAL imagery
+| Element                  | How it helps                      |
+| ------------------------ | --------------------------------- |
+| **Moving platform**      | Forces timing of magnet placement |
+| **Limited magnet count** | Forces smart planning             |
+| **Magnet timer / decay** | Can't spam forever                |
+
 
 i think this is way too ambitious but it gives me context to work with lol

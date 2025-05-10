@@ -7,8 +7,7 @@ let attractorOnClick = -1; // -1 is repulsion
 let inGame = false; // Temporary, to be replaced with timer.
 let preInGame = "start"; // State before entering game.
 
-let platforms3 = [];
-let platforms4 = [];
+let platforms1 = [], platforms2 = [], platforms3 = [], platforms4 = [], platforms5 = [], platforms6 = [];
 
 function preload() {
     imgCheckpoint = loadImage('/assets/checkpoint.png');
@@ -55,6 +54,7 @@ function handleMenus() {
 function handleGame() {
     buttonReload.show();
     handleButtonHover(buttonReload);
+    handleRoundText();
 
     displayMagnetNumber();
     handleForces();
@@ -62,7 +62,19 @@ function handleGame() {
     handleBall();
     handleKeyPress();
 
-    displayRound();
+    displayRounds();
+}
+
+function handleRoundText() {
+    push();
+    textAlign(CENTER);
+    textFont('Bahnschrift Condensed', 32);
+    textStyle(NORMAL);
+    stroke(120);
+    strokeWeight(3.5);
+    fill(255);
+    text(`Round ${round}`, width * 0.5, 55);
+    pop();
 }
 
 function handleMenuClicks() {
@@ -74,6 +86,10 @@ function handleMenuClicks() {
     if (buttonStartMenu.containsMouse()) {
         preInGame = "start";
         cursor(ARROW);
+    }
+    if (buttonGoToLatestRound.containsMouse()) {
+        inGame = true;
+        loadRound6();
     }
 }
 
@@ -123,6 +139,9 @@ function handleForces() {
 function handleKeyPress() {
     if (keyIsDown(65)) attractorOnClick = 1; // 'A' key
     if (keyIsDown(82)) attractorOnClick = -1; // 'R' key
+    if (keyIsDown(68)) {
+        magnets = [];    
+    }
 }
 
 function handleMagnetAddition() {
@@ -144,34 +163,51 @@ function reloadCurrentRound() {
     }
 }
 
-function displayRound() {
+function displayRounds() {
     if (round === 1) displayRound1();
     if (round === 2) displayRound2();
     if (round === 3) displayRound3();
     if (round === 4) displayRound4();
+    if (round === 5) displayRound5();
+    if (round === 6) displayRound6();
 }
 
 function setupPlatformsAndCheckpoints() {
     platform_1_1 = new Platform(0, 300, 800, 300);
+    platforms_1 = [platform_1_1];
     checkpoint_1 = new Checkpoint(740, 250);
 
     platform_2_1 = new Platform(0, 300, 800, 300);
+    platforms_2 = [platform_2_1];
     checkpoint_2 = new Checkpoint(740, 250);
 
     platform_3_1 = new Platform(0, 300, 300, 30);
     platform_3_2 = new Platform(500, 400, 300, 30);
-    platforms3 = [platform_3_1, platform_3_2];
+    platforms_3 = [platform_3_1, platform_3_2];
     checkpoint_3 = new Checkpoint(740, 350);
 
     platform_4_1 = new Platform(0, 200, 400, 30, "rubber");
     platform_4_2 = new Platform(200, 400, 500, 30, "ice");
-    platforms4 = [platform_4_1, platform_4_2];
+    platforms_4 = [platform_4_1, platform_4_2];
     checkpoint_4 = new Checkpoint(260, 350);
+
+    platform_5_1 = new Platform(0, 200, 100, 30);
+    platform_5_2 = new Platform(300, 300, 120, 30, "ice");
+    platform_5_3 = new Platform(600, 400, 200, 30)
+    platforms_5 = [platform_5_1, platform_5_2, platform_5_3];
+    checkpoint_5 = new Checkpoint(750, 350);
+
+    platform_6_1 = new Platform(0, 450, 300, 150);
+    platform_6_2 = new Platform(500, 450, 300, 150);
+    platforms_6 = [platform_6_1, platform_6_2];
+    checkpoint_6 = new Checkpoint(740, 400);
+    wall_6 = new Wall(300, 350, 200, 250);
 }
 
 function setupButtons() {
     buttonStart = new Button(width * 0.5, height * 0.5, 80, 30, 96, 36, "START");
     buttonInstructions = new Button(width * 0.5, height * 0.65, 115, 30, 138, 36, "INSTRUCTIONS");
+    buttonGoToLatestRound = new Button(width * 0.5, height * 0.8, 80, 30, 96, 36, "SKIP")
     buttonStartMenu = new Button(width - 120, height - 60, 80, 30, 88, 33, "BACK");
     buttonReload = new Button(width - 115, 55, 85, 25, 93.5, 27.5, "RESTART");
 }

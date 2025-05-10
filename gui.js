@@ -9,6 +9,7 @@ function startMenu() {
 
     handleButtonHover(buttonStart);
     handleButtonHover(buttonInstructions);
+    handleButtonHover(buttonGoToLatestRound);
 }
 
 function instructionsMenu() {
@@ -82,23 +83,34 @@ function displayMagnetStrengthCo() {
     pop();
 }
 
-function loadRound1() {
-    inGame = true;
-    round = 1;
-    magnetNumber.att = 1;
-    magnetNumber.rep = 0;
-    ball.position = createVector(120, 50);
+function loadRound(roundNum, magnetNumberAtt, magnetNumberRep, ballX, ballY) {
+    round = roundNum;
+    magnetNumber.att = magnetNumberAtt;
+    magnetNumber.rep = magnetNumberRep;
+    ball.position = createVector(ballX, ballY);
     ball.velocity = createVector(0, 0);
     magnets = [];
 }
 
-function displayRound1() {
-    checkpoint_1.show();
-    if (checkpoint_1.contains(ball)) loadRound2();
-    platform_1_1.show();
-    if (platform_1_1.isBallOnTop(ball)) {
-        platform_1_1.applyForces(ball);
+function displayRound(checkpoint, platforms, nextRound) {
+    checkpoint.show();
+    const nextRoundLoader = window[`loadRound${nextRound}`];
+    if (checkpoint.contains(ball) && typeof nextRoundLoader === "function") nextRoundLoader();
+    for(let platform of platforms) {
+        platform.show();
+        if (platform.isBallOnTop(ball)) {
+            platform.applyForces(ball);
+        }
     }
+}
+
+function loadRound1() {
+    inGame = true;
+    loadRound(1, 1, 0, 120, 50);
+}
+
+function displayRound1() {
+    displayRound(checkpoint_1, platforms_1, 2);
 
     push();
     textFont('Bahnschrift Condensed', 22);
@@ -113,21 +125,11 @@ function displayRound1() {
 }
 
 function loadRound2() {
-    round = 2;
-    magnetNumber.att = 0;
-    magnetNumber.rep = 1;
-    ball.position = createVector(120, 50);
-    ball.velocity = createVector(0, 0);
-    magnets = [];
+    loadRound(2, 0, 1, 120, 50);
 }
 
 function displayRound2() {
-    checkpoint_2.show();
-    if (checkpoint_2.contains(ball)) loadRound3();
-    platform_2_1.show();
-    if (platform_2_1.isBallOnTop(ball)) {
-        platform_2_1.applyForces(ball);
-    }
+    displayRound(checkpoint_2, platforms_2, 3);
 
     push();
     textFont('Bahnschrift Condensed', 22);
@@ -142,23 +144,11 @@ function displayRound2() {
 }
 
 function loadRound3() {
-    round = 3;
-    magnetNumber.att = 2;
-    magnetNumber.rep = 0;
-    ball.position = createVector(100, 50);
-    ball.velocity = createVector(0, 0);
-    magnets = [];
+    loadRound(3, 2, 0, 100, 50);
 }
 
 function displayRound3() {
-    checkpoint_3.show();
-    if (checkpoint_3.contains(ball)) loadRound4();
-    for (let platform of platforms3) {
-        platform.show();
-        if (platform.isBallOnTop(ball)) {
-            platform.applyForces(ball);
-        }
-    }
+    displayRound(checkpoint_3, platforms_3, 4);
 
     push();
     textFont('Bahnschrift Condensed', 22);
@@ -173,23 +163,11 @@ function displayRound3() {
 }
 
 function loadRound4() {
-    round = 4;
-    magnetNumber.att = 0;
-    magnetNumber.rep = 1;
-    ball.position = createVector(140, 100);
-    ball.velocity = createVector(0, 0);
-    magnets = [];
+    loadRound(4, 0, 1, 140, 100);
 }
 
 function displayRound4() {
-    checkpoint_4.show();
-    if (checkpoint_4.contains(ball)) loadRound4();
-    for (let platform of platforms4) {
-        platform.show();
-        if (platform.isBallOnTop(ball)) {
-            platform.applyForces(ball);
-        }
-    }
+    displayRound(checkpoint_4, platforms_4, 5);
 
     push();
     textFont('Bahnschrift Condensed', 22);
@@ -200,5 +178,38 @@ function displayRound4() {
     textAlign(CENTER)
     fill(platform_4_2.materialColor)
     text("Ice has zero friction and lower damping.", platform_4_2.x + platform_4_2.w * 0.5, platform_4_2.y + 56);
+    pop();
+}
+
+function loadRound5() {
+    loadRound(5, 1, 0, 50, 100);
+}
+
+function displayRound5() {
+    displayRound(checkpoint_5, platforms_5, 6);
+
+    platform_5_2.x = 300 + sin(millis() * 0.001) * 200;
+}
+
+function loadRound6() {
+    loadRound(6, 5, 0, 120, 400);
+}
+
+function displayRound6() {
+    displayRound(checkpoint_6, platforms_6, 6);
+    wall_6.show();
+    wall_6.touch(ball);
+    
+    push();
+    textFont('Bahnschrift Condensed', 22);
+    textStyle(NORMAL);
+    textAlign(CENTER);
+    fill(135, 135, 255)
+    text("Pressing D deletes magnets from the scene.\nIt does not return you any magnet though, so plan wisely!", width * 0.5, height * 0.5 - 150);
+    textSize(12)
+    text("The ball can be lifted.", width * 0.5, height * 0.5 - 100);
+    textSize(22)
+    fill(0, 0, 0);
+    text("Walls kill!", width * 0.5, height * 0.5 + 30);
     pop();
 }

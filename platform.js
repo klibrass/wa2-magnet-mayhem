@@ -14,7 +14,7 @@ class Platform {
             0.28;
         this.materialColor =
             material == "ice" ? [150, 170, 200] :
-            material == "rubber" ? [30, 30, 30] :
+            material == "rubber" ? [48, 48, 48] :
             [255, 255, 255]
     }
 
