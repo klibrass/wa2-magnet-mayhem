@@ -6,6 +6,7 @@ let attractorOnClick = -1; // -1 is repulsion
 
 let inGame = false; // Temporary, to be replaced with timer.
 let preInGame = "start"; // State before entering game.
+let inGameStage = "PRELIMINARY";
 
 let platforms1 = [], platforms2 = [], platforms3 = [], platforms4 = [], platforms5 = [], platforms6 = [];
 
@@ -24,6 +25,8 @@ function setup() {
 function draw() {
     background(220, 235, 240);
 
+    cursor(ARROW);
+
     updateMagnetColors();
 
     if (!inGame) {
@@ -38,6 +41,9 @@ function mouseClicked() {
         if (buttonReload.containsMouse()) {
             reloadCurrentRound();
             cursor(ARROW);
+        } else if (emojiButtonQuit.containsMouse()) {
+            inGame = false;
+            preInGame = "start";
         } else {
             handleMagnetAddition();
         }
@@ -54,6 +60,7 @@ function handleMenus() {
 function handleGame() {
     buttonReload.show();
     handleButtonHover(buttonReload);
+    handleButtonHover(emojiButtonQuit);
     handleRoundText();
 
     displayMagnetNumber();
@@ -74,6 +81,9 @@ function handleRoundText() {
     strokeWeight(3.5);
     fill(255);
     text(`Round ${round}`, width * 0.5, 55);
+    textSize(16);
+    strokeWeight(2);
+    text(inGameStage, width * 0.5, 79);
     pop();
 }
 
@@ -210,4 +220,6 @@ function setupButtons() {
     buttonGoToLatestRound = new Button(width * 0.5, height * 0.8, 80, 30, 96, 36, "SKIP")
     buttonStartMenu = new Button(width - 120, height - 60, 80, 30, 88, 33, "BACK");
     buttonReload = new Button(width - 115, 55, 85, 25, 93.5, 27.5, "RESTART");
+
+    emojiButtonQuit = new EmojiButton(5, 5, 15, 20, "❌", "QUIT", [255, 99, 120]);
 }

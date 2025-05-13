@@ -58,13 +58,72 @@ class Button {
     }
 }
 
+class EmojiButton {
+    constructor(x, y, size, dsize, emoji, splashText, splashTextColor) {
+        this.x = x;
+        this.y = y;
+        this.size = size;
+        this.baseSize = size;
+        this.dsize = dsize;
+        this.emoji = emoji;
+        this.splashText = splashText;
+        this.splashTextColor = splashTextColor;
+    }
+
+    show() {
+        push();
+        fill(0, 0, 0, 0);
+        noStroke();
+        square(this.x, this.y, this.size);
+
+        fill(0, 0, 0, 255);
+        textAlign(CENTER);
+        textStyle(NORMAL);
+        textSize(this.size);
+        text(this.emoji, this.x + this.size * 0.5, this.y + this.size);
+        pop();
+    }
+
+    containsMouse() {
+        return (
+            this.x <= mouseX &&
+            this.x + this.size >= mouseX &&
+            this.y <= mouseY &&
+            this.y + this.size >= mouseY
+        )
+    }
+
+    shift(hovered) {
+        this.size = hovered
+            ? lerp(this.size, this.dsize, 0.2)
+            : lerp(this.size, this.baseSize, 0.2);
+        if (hovered) {
+            push();
+            fill(this.splashTextColor);
+            textStyle(NORMAL);
+            textFont('Bahnschrift Condensed', this.size);
+            text(this.splashText, this.x + this.size * 2, this.y + this.size);
+            pop();
+        }
+    }
+}
+
 function handleButtonHover(button) {
     button.show();
-    if(button.containsMouse()) {
+    if (button.containsMouse()) {
         button.shift(true);
         cursor(HAND);
     } else {
         button.shift(false);
-        cursor(ARROW);
+    }
+}
+
+function handleEmojiButtonHover(emojiButton) {
+    emojiButton.show();
+    if (emojiButton.containsMouse()) {
+        emojiButton.shift(true);
+        cursor(HAND);
+    } else {
+        emojiButton.shift(false);
     }
 }
