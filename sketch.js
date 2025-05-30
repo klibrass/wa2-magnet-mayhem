@@ -5,28 +5,34 @@ let magnetColor, magnetColorHover;
 let attractorOnClick = -1; // -1 is repulsion
 
 let inGame = false; // Temporary, to be replaced with timer.
+let isRoundComplete = false;
 let preInGame = "start"; // State before entering game.
 let inGameStage = "PRELIMINARY";
 
-let platforms1 = [], platforms2 = [], platforms3 = [], platforms4 = [], platforms5 = [], platforms6 = [];
+let platforms = [];
+let checkpoints = [];
+let walls = [];
+let waterZones = [];
 
 function preload() {
     imgCheckpoint = loadImage('/assets/checkpoint.png');
+    imgComplete = loadImage('/assets/complete screen.png');
 }
 
 function setup() {
     createCanvas(800, 600);
 
     ball = new Ball(120, 50, 20);
+    gravity = createVector(0, 3);
+    wind = createVector(0, 0);
+
     setupPlatformsAndCheckpoints();
     setupButtons();
 }
 
 function draw() {
     background(220, 235, 240);
-
     cursor(ARROW);
-
     updateMagnetColors();
 
     if (!inGame) {
@@ -38,12 +44,17 @@ function draw() {
 
 function mouseClicked() {
     if (inGame) {
-        if (buttonReload.containsMouse()) {
+        if (buttonReload.containsMouse() || (buttonReloadComplete.containsMouse() && isRoundComplete)) {
             reloadCurrentRound();
             cursor(ARROW);
         } else if (emojiButtonQuit.containsMouse()) {
             inGame = false;
             preInGame = "start";
+        } else if (buttonNextRound.containsMouse() && isRoundComplete) {
+            const nextRoundLoader = window[`loadRound${round + 1}`];
+            if (typeof nextRoundLoader === "function") {
+                nextRoundLoader();
+            }
         } else {
             handleMagnetAddition();
         }
@@ -58,18 +69,20 @@ function handleMenus() {
 }
 
 function handleGame() {
+    displayRounds();
     buttonReload.show();
-    handleButtonHover(buttonReload);
-    handleButtonHover(emojiButtonQuit);
-    handleRoundText();
+    if (!isRoundComplete) handleButtonHover(buttonReload);
 
-    displayMagnetNumber();
+    handleRoundText();
     handleForces();
+    displayMagnetNumber();
+    displayMagnetStrengthCo();
     drawHoverEffect();
     handleBall();
-    handleKeyPress();
 
-    displayRounds();
+    if (isRoundComplete) displayCompleteScreen();
+    handleButtonHover(emojiButtonQuit);
+    handleKeyPress();
 }
 
 function handleRoundText() {
@@ -81,6 +94,7 @@ function handleRoundText() {
     strokeWeight(3.5);
     fill(255);
     text(`Round ${round}`, width * 0.5, 55);
+
     textSize(16);
     strokeWeight(2);
     text(inGameStage, width * 0.5, 79);
@@ -88,18 +102,24 @@ function handleRoundText() {
 }
 
 function handleMenuClicks() {
-    if (buttonStart.containsMouse()) loadRound1();
+    if (buttonStart.containsMouse()) {
+        inGameStage = "PRELIMINARY";
+        loadRound1();
+    }
+
     if (buttonInstructions.containsMouse()) {
         preInGame = "instructions";
         cursor(ARROW);
     }
+
     if (buttonStartMenu.containsMouse()) {
         preInGame = "start";
         cursor(ARROW);
     }
+
     if (buttonGoToLatestRound.containsMouse()) {
         inGame = true;
-        loadRound6();
+        loadRound9();
     }
 }
 
@@ -120,8 +140,9 @@ function handleBall() {
     ball.show();
     ball.update();
     ball.outOfFrame();
-
     displayBallVelocity();
+
+    if (isRoundComplete) ball.velocity = createVector(0, 0);
 }
 
 function displayBallVelocity() {
@@ -132,7 +153,7 @@ function displayBallVelocity() {
 }
 
 function handleForces() {
-    for (let magnet of magnets) {
+    magnets.forEach(magnet => {
         magnet.show();
         magnet.changeColorHovered();
         if (magnet.attractionStatus === 1) {
@@ -140,26 +161,23 @@ function handleForces() {
         } else {
             ball.applyForce(magnet.calculateRepulsion(ball));
         }
-    }
+    });
 
-    let gravity = createVector(0, 3);
     ball.applyForce(gravity);
+    ball.applyForce(wind);
 }
 
 function handleKeyPress() {
     if (keyIsDown(65)) attractorOnClick = 1; // 'A' key
     if (keyIsDown(82)) attractorOnClick = -1; // 'R' key
-    if (keyIsDown(68)) {
-        magnets = [];    
-    }
+    if (keyIsDown(68)) magnets = []; // 'D' key
 }
 
 function handleMagnetAddition() {
-    let hoveredMagnet = getHoveredMagnet();
-
-    if (hoveredMagnet) {
+    const hoveredMagnet = getHoveredMagnet();
+    if (hoveredMagnet && !isRoundComplete) {
         removeMagnet(hoveredMagnet);
-    } else {
+    } else if (!isRoundComplete) {
         addNewMagnet();
     }
 }
@@ -174,44 +192,60 @@ function reloadCurrentRound() {
 }
 
 function displayRounds() {
-    if (round === 1) displayRound1();
-    if (round === 2) displayRound2();
-    if (round === 3) displayRound3();
-    if (round === 4) displayRound4();
-    if (round === 5) displayRound5();
-    if (round === 6) displayRound6();
+    const roundDisplayFunction = window[`displayRound${round}`];
+    if (typeof roundDisplayFunction === "function") {
+        roundDisplayFunction();
+    }
 }
 
 function setupPlatformsAndCheckpoints() {
-    platform_1_1 = new Platform(0, 300, 800, 300);
-    platforms_1 = [platform_1_1];
-    checkpoint_1 = new Checkpoint(740, 250);
+    platforms = [
+        [new Platform(0, 300, 800, 300)],
+        [new Platform(0, 300, 800, 300)],
+        [new Platform(0, 300, 300, 30), new Platform(500, 400, 300, 30)],
+        [new Platform(0, 200, 400, 30, "rubber"), new Platform(200, 400, 500, 30, "ice")],
+        [new Platform(0, 200, 100, 30), new Platform(300, 300, 180, 30, "ice"), new Platform(600, 400, 200, 30)],
+        [new Platform(0, 450, 350, 150), new Platform(450, 450, 350, 150, "ice")],
+        [new Platform(250, 250, 300, 30)],
+        [new Platform(0, 450, width, 150)],
+        [new Platform(50, 200, 150, 30), new Platform(550, 500, 150, 100)]
+    ];
 
-    platform_2_1 = new Platform(0, 300, 800, 300);
-    platforms_2 = [platform_2_1];
-    checkpoint_2 = new Checkpoint(740, 250);
+    checkpoints = [
+        new Checkpoint(740, 250),
+        new Checkpoint(740, 250),
+        new Checkpoint(740, 350),
+        new Checkpoint(260, 350),
+        new Checkpoint(750, 350),
+        new Checkpoint(740, 400),
+        new Checkpoint(width * 0.5, 550),
+        new Checkpoint(680, 400),
+        new Checkpoint(600, 450)
+    ];
 
-    platform_3_1 = new Platform(0, 300, 300, 30);
-    platform_3_2 = new Platform(500, 400, 300, 30);
-    platforms_3 = [platform_3_1, platform_3_2];
-    checkpoint_3 = new Checkpoint(740, 350);
+    walls = [
+        null,
+        null,
+        null,
+        null,
+        null,
+        new Wall(350, 400, 100, 200),
+        null,
+        [new Wall(0, 0, 50, height), new Wall(750, 0, 50, height)],
+        new Wall(width * 0.5 - 30, 370, 60, 230)
+    ];
 
-    platform_4_1 = new Platform(0, 200, 400, 30, "rubber");
-    platform_4_2 = new Platform(200, 400, 500, 30, "ice");
-    platforms_4 = [platform_4_1, platform_4_2];
-    checkpoint_4 = new Checkpoint(260, 350);
-
-    platform_5_1 = new Platform(0, 200, 100, 30);
-    platform_5_2 = new Platform(300, 300, 120, 30, "ice");
-    platform_5_3 = new Platform(600, 400, 200, 30)
-    platforms_5 = [platform_5_1, platform_5_2, platform_5_3];
-    checkpoint_5 = new Checkpoint(750, 350);
-
-    platform_6_1 = new Platform(0, 450, 300, 150);
-    platform_6_2 = new Platform(500, 450, 300, 150);
-    platforms_6 = [platform_6_1, platform_6_2];
-    checkpoint_6 = new Checkpoint(740, 400);
-    wall_6 = new Wall(300, 350, 200, 250);
+    waterZones = [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        new WaterZone(0, 280, width, height - 280),
+        null,
+        null
+    ];
 }
 
 function setupButtons() {
@@ -220,6 +254,8 @@ function setupButtons() {
     buttonGoToLatestRound = new Button(width * 0.5, height * 0.8, 80, 30, 96, 36, "SKIP")
     buttonStartMenu = new Button(width - 120, height - 60, 80, 30, 88, 33, "BACK");
     buttonReload = new Button(width - 115, 55, 85, 25, 93.5, 27.5, "RESTART");
+    buttonNextRound = new Button(width * 0.5, height * 0.5, 80, 30, 96, 36, "NEXT");
+    buttonReloadComplete = new Button(width * 0.5, height * 0.5 + 80, 80, 30, 96, 36, "RESTART");
 
     emojiButtonQuit = new EmojiButton(5, 5, 15, 20, "❌", "QUIT", [255, 99, 120]);
 }

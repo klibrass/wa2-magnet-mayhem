@@ -3,9 +3,14 @@ function startMenu() {
     textAlign(CENTER);
     textStyle(BOLD);
     fill(120);
-    text('MAGNET MAYHEM', width * 0.5 - 3, 153)
+    text('MAGNET & MAYHEM', width * 0.5 - 3, 153)
     fill(255);
-    text('MAGNET MAYHEM', width * 0.5, 150);
+    text('MAGNET & MAYHEM', width * 0.5, 150);
+    textFont('Bahnschrift', 20);
+    fill(120);
+    text('or M&M', width * 0.5 - 2, 202)
+    fill(255);
+    text('or M&M', width * 0.5, 200);
 
     handleButtonHover(buttonStart);
     handleButtonHover(buttonInstructions);
@@ -71,15 +76,21 @@ function displayMagnetStrengthCo() {
     textStyle(NORMAL);
     textAlign(LEFT);
 
-    if (magnetStrengthCo < 1) {
-        fill(97, 7, 25);
-        text(`SLOWED: x${magnetStrengthCo}`, 65, 63 + 20 * 0.25);
-    } else if (magnetStrengthCo > 1) {
-        fill(107, 52, 102);
-        text(`SPED: x${magnetStrengthCo}`, 65, 63 + 20 * 0.25);
+    if (magnetStrengthCo != 1) {
+        if (magnetStrengthCo < 1) {
+            fill(97, 7, 25);
+            text(`WEAKENED: x${magnetStrengthCo}`, 65, 103 + 20 * 0.25);
+        } else if (magnetStrengthCo > 1) {
+            fill(107, 52, 102);
+            text(`STRENGTHENED: x${magnetStrengthCo}`, 65, 103 + 20 * 0.25);
+        }
+        if (wind.mag() != 0) {
+            fill(219, 15, 73);
+            text(`SLOWED: x${magnetStrengthCo}`, 65, 133 + 20 * 0.25);
+        }
+        circle(50, 103, 20);
     }
 
-    circle(50, 63, 20);
     pop();
 }
 
@@ -93,24 +104,44 @@ function loadRound(roundNum, magnetNumberAtt, magnetNumberRep, ballX, ballY) {
 }
 
 function displayRound(checkpoint, platforms, nextRound) {
+    // nextRound stationed here because I'm too lazy to remove unnecessary functions
     checkpoint.show();
-    const nextRoundLoader = window[`loadRound${nextRound}`];
-    if (checkpoint.contains(ball) && typeof nextRoundLoader === "function") nextRoundLoader();
-    for(let platform of platforms) {
+    isRoundComplete = checkpoint.contains(ball);
+
+    platforms.forEach(platform => {
         platform.show();
         if (platform.isBallOnTop(ball)) {
             platform.applyForces(ball);
         }
-    }
+    });
+}
+
+function displayCompleteScreen() {
+    push();
+    fill(0, 0, 0, 150);
+    rect(0, 0, width, height);
+    image(imgComplete, width * 0.5 - 250, height * 0.5 - 250, 500, 500);
+    textFont('Bahnschrift Condensed', 30);
+    textAlign(CENTER);
+    textStyle(BOLD);
+    fill(255);
+    text(`ROUND ${round}`, width * 0.5, height * 0.5 - 70);
+    
+    buttonNextRound.show();
+    buttonReloadComplete.show();
+    handleButtonHover(buttonNextRound);
+    handleButtonHover(buttonReloadComplete);
+    pop();
 }
 
 function loadRound1() {
     inGame = true;
+    magnetStrengthCo = 1;
     loadRound(1, 1, 0, 120, 50);
 }
 
 function displayRound1() {
-    displayRound(checkpoint_1, platforms_1, 2);
+    displayRound(checkpoints[0], platforms[0], 2);
 
     push();
     textFont('Bahnschrift Condensed', 22);
@@ -129,7 +160,7 @@ function loadRound2() {
 }
 
 function displayRound2() {
-    displayRound(checkpoint_2, platforms_2, 3);
+    displayRound(checkpoints[1], platforms[1], 3);
 
     push();
     textFont('Bahnschrift Condensed', 22);
@@ -148,7 +179,7 @@ function loadRound3() {
 }
 
 function displayRound3() {
-    displayRound(checkpoint_3, platforms_3, 4);
+    displayRound(checkpoints[2], platforms[2], 4);
 
     push();
     textFont('Bahnschrift Condensed', 22);
@@ -167,17 +198,17 @@ function loadRound4() {
 }
 
 function displayRound4() {
-    displayRound(checkpoint_4, platforms_4, 5);
+    displayRound(checkpoints[3], platforms[3], 5);
 
     push();
     textFont('Bahnschrift Condensed', 22);
     textStyle(NORMAL);
     textAlign(LEFT);
-    fill(platform_4_1.materialColor)
-    text("Rubber has high damping and friction.", platform_4_1.x + 10, platform_4_1.y + 56);
+    fill(48, 48, 48)
+    text("Rubber has high damping and friction.", platforms[3][0].x + 10, platforms[3][0].y + 56);
     textAlign(CENTER)
-    fill(platform_4_2.materialColor)
-    text("Ice has zero friction and lower damping.", platform_4_2.x + platform_4_2.w * 0.5, platform_4_2.y + 56);
+    fill(150, 170, 200)
+    text("Ice has zero friction and lower damping.", platforms[3][1].x + platforms[3][1].w * 0.5, platforms[3][1].y + 56);
     pop();
 }
 
@@ -186,19 +217,20 @@ function loadRound5() {
 }
 
 function displayRound5() {
-    displayRound(checkpoint_5, platforms_5, 6);
+    displayRound(checkpoints[4], platforms[4], 6);
 
-    platform_5_2.x = 300 + sin(millis() * 0.001) * 200;
+    platforms[4][1].x = 300 + sin(millis() * 0.001) * 200;
 }
 
 function loadRound6() {
-    loadRound(6, 5, 0, 120, 400);
+    loadRound(6, 4, 0, 120, 400);
+    magnetStrengthCo = 2;
 }
 
 function displayRound6() {
-    displayRound(checkpoint_6, platforms_6, 6);
-    wall_6.show();
-    wall_6.touch(ball);
+    displayRound(checkpoints[5], platforms[5], 7);
+    walls[5].show();
+    walls[5].touch(ball);
     
     push();
     textFont('Bahnschrift Condensed', 22);
@@ -212,4 +244,65 @@ function displayRound6() {
     fill(0, 0, 0);
     text("Walls kill!", width * 0.5, height * 0.5 + 30);
     pop();
+}
+
+function loadRound7() {
+    loadRound(7, 0, 2, width * 0.5, 80);
+    magnetStrengthCo = 1;
+}
+
+function displayRound7() {
+    displayRound(checkpoints[6], platforms[6], 8);
+    waterZones[6].show();
+    if (waterZones[6].contains(ball)) {
+        waterZones[6].applyForce(ball);
+    }   
+
+    push();
+    textFont('Bahnschrift Condensed', 22);
+    textStyle(NORMAL);
+    textAlign(CENTER);
+    fill(135, 135, 255);
+    text("Water zones apply drag to the ball\nor in other words the ball slows down in water!", width * 0.5, height * 0.5 - 150);
+    textSize(12);
+    text("I don't know if I told you this, but the closer the magnet, the stronger it is.", width * 0.5, height * 0.5 - 100);
+    pop();
+}
+
+function loadRound8() {
+    loadRound(8, 1, 0, 120, 30);
+}
+
+function displayRound8() {
+    displayRound(checkpoints[7], platforms[7], 9);
+
+    walls[7][0].show();
+    walls[7][0].touch(ball);
+    walls[7][1].show();
+    walls[7][1].touch(ball);
+
+    push();
+    textFont('Bahnschrift Condensed', 18);
+    textStyle(NORMAL);
+    textAlign(CENTER);
+    fill(135, 135, 255);
+    text("Now your prelims end here. With that being said,\nI should reveal to you what's the point of this.", width * 0.5, height * 0.5 - 200);
+    text("If you just want to proceed straight to this game's boring sandbox,\nthen you can press the ❌ button on the corner to go back to the main menu.", width * 0.5, height * 0.5 - 130);
+    text("True fun lies in exploration.\nFor the next 10 rounds, you'll be presented with harder and harder challenges.\nAnd it will be rewarding, as you'll unlock hidden mechanisms in the final sandbox\nonly found through each of these rounds.", width * 0.5, height * 0.5 - 30);
+    fill(0);
+    text("If you wish to proceed, go to the flag. Good luck and have fun!", width * 0.5, height - 90);
+    pop();
+}
+
+function loadRound9() {
+    loadRound(9, 1, 0, 120, 30);
+    magnetStrengthCo = 1.5;
+    inGameStage = "CHALLENGE";
+}
+
+function displayRound9() {
+    displayRound(checkpoints[8], platforms[8], 9);
+
+    walls[8].show();
+    walls[8].touch(ball);
 }

@@ -1,9 +1,9 @@
-let magnetStrengthCo = 1;
+let magnetStrengthCo = 1.0;
 
 class Magnet {
     constructor(x, y, attractionStatus, radius, G = 1) {
         this.position = createVector(x, y);
-        this.G = G * magnetStrengthCo;
+        this.G = G;
         this.attractionStatus = attractionStatus;
         this.color = magnetColor;
         this.radius = radius;
@@ -54,12 +54,13 @@ class Magnet {
             ? p5.Vector.sub(this.position, ball.position)
             : p5.Vector.sub(ball.position, this.position);
     
-        let distance = force.mag();
-        distance = constrain(distance, 5, 10);
+        let distance = sqrt(force.mag());
+        distance = constrain(distance, 5, 15);
         force.normalize();
 
-        let strength = (this.G * this.mass * ball.mass) / (this.distance * this.distance)
+        let strength = (this.G * magnetStrengthCo * this.mass * ball.mass) / (distance * distance)
         force.mult(strength);
+        console.log(strength);
 
         return force;
     }

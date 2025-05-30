@@ -1,5 +1,5 @@
 class WaterZone {
-    constructor(x, y, w, h, dragCo) {
+    constructor(x, y, w, h, dragCo = 0.5) {
         this.x = x;
         this.y = y;
         this.w = w;
@@ -9,7 +9,7 @@ class WaterZone {
 
     show() {
         push();
-        fill(107, 144, 255);
+        fill(107, 144, 255, 125);
         noStroke();
         rect(this.x, this.y, this.w, this.h);
         pop();
