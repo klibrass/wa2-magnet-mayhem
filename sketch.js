@@ -17,6 +17,7 @@ let waterZones = [];
 function preload() {
     imgCheckpoint = loadImage('/assets/checkpoint.png');
     imgComplete = loadImage('/assets/complete screen.png');
+    imgOrbColorPicker = loadImage('/assets/rainbow orb.png');
 }
 
 function setup() {
@@ -28,6 +29,7 @@ function setup() {
 
     setupPlatformsAndCheckpoints();
     setupButtons();
+    setupCollectibles();
 }
 
 function draw() {
@@ -137,12 +139,15 @@ function drawHoverEffect() {
 }
 
 function handleBall() {
-    ball.show();
-    ball.update();
-    ball.outOfFrame();
-    displayBallVelocity();
-
-    if (isRoundComplete) ball.velocity = createVector(0, 0);
+    if (isRoundComplete) {
+        ball.acceleration.mult(0);
+        ball.velocity.mult(0);
+    } else {
+        ball.show();
+        ball.update();
+        ball.outOfFrame();
+        displayBallVelocity();
+    }
 }
 
 function displayBallVelocity() {
@@ -208,7 +213,8 @@ function setupPlatformsAndCheckpoints() {
         [new Platform(0, 450, 350, 150), new Platform(450, 450, 350, 150, "ice")],
         [new Platform(250, 250, 300, 30)],
         [new Platform(0, 450, width, 150)],
-        [new Platform(50, 200, 150, 30), new Platform(550, 500, 150, 100)]
+        [new Platform(50, 200, 150, 30), new Platform(500, 500, 300, 100)],
+        [new Platform(50, 200, 150, 30)]
     ];
 
     checkpoints = [
@@ -220,7 +226,8 @@ function setupPlatformsAndCheckpoints() {
         new Checkpoint(740, 400),
         new Checkpoint(width * 0.5, 550),
         new Checkpoint(680, 400),
-        new Checkpoint(600, 450)
+        new Checkpoint(500, 450),
+        new Checkpoint(500, 400)
     ];
 
     walls = [
@@ -232,7 +239,8 @@ function setupPlatformsAndCheckpoints() {
         new Wall(350, 400, 100, 200),
         null,
         [new Wall(0, 0, 50, height), new Wall(750, 0, 50, height)],
-        new Wall(width * 0.5 - 30, 370, 60, 230)
+        new Wall(width * 0.5 - 30, 370, 60, 230),
+        null
     ];
 
     waterZones = [
@@ -243,6 +251,7 @@ function setupPlatformsAndCheckpoints() {
         null,
         null,
         new WaterZone(0, 280, width, height - 280),
+        null,
         null,
         null
     ];
@@ -258,4 +267,8 @@ function setupButtons() {
     buttonReloadComplete = new Button(width * 0.5, height * 0.5 + 80, 80, 30, 96, 36, "RESTART");
 
     emojiButtonQuit = new EmojiButton(5, 5, 15, 20, "❌", "QUIT", [255, 99, 120]);
+}
+
+function setupCollectibles() {
+    orbColorPicker = new OrbColorPicker(700, 470, 20);
 }

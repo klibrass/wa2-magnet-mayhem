@@ -107,6 +107,9 @@ function displayRound(checkpoint, platforms, nextRound) {
     // nextRound stationed here because I'm too lazy to remove unnecessary functions
     checkpoint.show();
     isRoundComplete = checkpoint.contains(ball);
+    if (isRoundComplete) {
+        ball.position = createVector(checkpoint.x, checkpoint.y);
+    }
 
     platforms.forEach(platform => {
         platform.show();
@@ -295,9 +298,10 @@ function displayRound8() {
 }
 
 function loadRound9() {
-    loadRound(9, 1, 0, 120, 30);
+    loadRound(9, 0, 2, 120, 30);
     magnetStrengthCo = 1.5;
     inGameStage = "CHALLENGE";
+    orbColorPicker.isCollected = false;
 }
 
 function displayRound9() {
@@ -305,4 +309,38 @@ function displayRound9() {
 
     walls[8].show();
     walls[8].touch(ball);
+
+    image(imgOrbColorPicker, 50, 300, 50, 50);
+
+    push();
+    textFont('Bahnschrift Condensed');
+    textStyle(BOLD);
+    textAlign(LEFT);
+    if (!orbColorPicker.isCollected) {
+        fill(135, 135, 255);
+    } else {
+        fill('green');
+    }
+    textSize(20);
+    text("Perks of Round 9", 50, 290);
+    textSize(22);
+    text("Colour Picker", 50, 380);
+    textStyle(NORMAL);
+    textSize(20);
+    text("You will be able to customise the\ncolour of the balls in the sandbox.", 50, 410);
+    textSize(16);
+    text("If you've already acquired the perk, you'll\nlose it upon retrying this round.", 50, 500);
+    pop();
+
+    orbColorPicker.show();
+    orbColorPicker.touch(ball);
+}
+
+function loadRound10() {
+    loadRound(10, 0, 2, 120, 30);
+    magnetStrengthCo = 1;
+}
+
+function displayRound10() {
+    displayRound(checkpoints[9], platforms[9]);
 }
