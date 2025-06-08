@@ -18,6 +18,8 @@ function preload() {
     imgCheckpoint = loadImage('/assets/checkpoint.png');
     imgComplete = loadImage('/assets/complete screen.png');
     imgOrbColorPicker = loadImage('/assets/rainbow orb.png');
+    imgOrbWind = loadImage('/assets/wind orb.png');
+    imgOrbAntiGravity = loadImage('/assets/antigravity orb.png');
 }
 
 function setup() {
@@ -121,7 +123,7 @@ function handleMenuClicks() {
 
     if (buttonGoToLatestRound.containsMouse()) {
         inGame = true;
-        loadRound9();
+        loadRound11();
     }
 }
 
@@ -139,14 +141,14 @@ function drawHoverEffect() {
 }
 
 function handleBall() {
-    if (isRoundComplete) {
-        ball.acceleration.mult(0);
-        ball.velocity.mult(0);
-    } else {
+    if (!isRoundComplete) {
         ball.show();
         ball.update();
         ball.outOfFrame();
         displayBallVelocity();
+    } else {
+        ball.acceleration.mult(0);
+        ball.velocity.mult(0);
     }
 }
 
@@ -214,7 +216,8 @@ function setupPlatformsAndCheckpoints() {
         [new Platform(250, 250, 300, 30)],
         [new Platform(0, 450, width, 150)],
         [new Platform(50, 200, 150, 30), new Platform(500, 500, 300, 100)],
-        [new Platform(50, 200, 150, 30)]
+        [new Platform(350, 200, 100, 30), new Platform(350, 500, 100, 30)],
+        [new Platform(500, 0, 300, 100)]
     ];
 
     checkpoints = [
@@ -227,7 +230,8 @@ function setupPlatformsAndCheckpoints() {
         new Checkpoint(width * 0.5, 550),
         new Checkpoint(680, 400),
         new Checkpoint(500, 450),
-        new Checkpoint(500, 400)
+        new Checkpoint(380, 450),
+        new Checkpoint(700, 110)
     ];
 
     walls = [
@@ -240,7 +244,8 @@ function setupPlatformsAndCheckpoints() {
         null,
         [new Wall(0, 0, 50, height), new Wall(750, 0, 50, height)],
         new Wall(width * 0.5 - 30, 370, 60, 230),
-        null
+        null,
+        new Wall (300, 300, 200, 300)
     ];
 
     waterZones = [
@@ -253,7 +258,8 @@ function setupPlatformsAndCheckpoints() {
         new WaterZone(0, 280, width, height - 280),
         null,
         null,
-        null
+        null,
+        new WaterZone(0, 0, width, height)
     ];
 }
 
@@ -270,5 +276,7 @@ function setupButtons() {
 }
 
 function setupCollectibles() {
-    orbColorPicker = new OrbColorPicker(700, 470, 20);
+    orbColorPicker = new Orb(700, 470, 20, imgOrbColorPicker);
+    orbWind = new Orb(width * 0.5, 350, 20, imgOrbWind);
+    orbAntiGravity = new Orb(600, 350, 20, imgOrbAntiGravity);
 }

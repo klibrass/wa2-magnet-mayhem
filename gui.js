@@ -84,12 +84,23 @@ function displayMagnetStrengthCo() {
             fill(107, 52, 102);
             text(`STRENGTHENED: x${magnetStrengthCo}`, 65, 103 + 20 * 0.25);
         }
-        if (wind.mag() != 0) {
-            fill(219, 15, 73);
-            text(`SLOWED: x${magnetStrengthCo}`, 65, 133 + 20 * 0.25);
-        }
+
         circle(50, 103, 20);
     }
+    if (wind.mag() != 0) {
+        fill(8, 79, 106);
+
+        let windDirection;
+        windDirection =
+            wind.x < 0 ? "LEFT" :
+            wind.x > 0 ? "RIGHT" :
+            wind.y < 0 ? "UP" :
+            "DOWN"
+        text(`WIND SPEED: ${wind.mag()} unit/s, ${windDirection}`, 65, 133 + 20 * 0.25);
+
+        circle(50, 133, 20);
+    }
+
 
     pop();
 }
@@ -140,6 +151,7 @@ function displayCompleteScreen() {
 function loadRound1() {
     inGame = true;
     magnetStrengthCo = 1;
+    wind = createVector(0, 0);
     loadRound(1, 1, 0, 120, 50);
 }
 
@@ -337,10 +349,78 @@ function displayRound9() {
 }
 
 function loadRound10() {
-    loadRound(10, 0, 2, 120, 30);
-    magnetStrengthCo = 1;
+    loadRound(10, 3, 0, width * 0.5, 90);
+    wind = createVector(1, 0);
+    orbWind.isCollected = false;
 }
 
 function displayRound10() {
     displayRound(checkpoints[9], platforms[9]);
+
+    orbWind.show();
+    orbWind.touch(ball);
+
+    image(imgOrbWind, 50, 300, 50, 50);
+
+    push();
+    textFont('Bahnschrift Condensed');
+    textStyle(BOLD);
+    textAlign(LEFT);
+    if (!orbWind.isCollected) {
+        fill(135, 135, 255);
+    } else {
+        fill('green');
+    }
+    textSize(20);
+    text("Perks of Round 10", 50, 290);
+    textSize(22);
+    text("Wind", 50, 380);
+    textStyle(NORMAL);
+    textSize(20);
+    text("You will be able to customise the\ndirection of wind in the sandbox.", 50, 410);
+    textSize(16);
+    text("If you've already acquired the perk, you'll\nlose it upon retrying this round.", 50, 500);
+    pop();
+}
+
+function loadRound11() {
+    loadRound(11, 0, 15, 100, 100);
+    wind = createVector(0, 0);
+    orbAntiGravity.isCollected = false;
+    magnetStrengthCo = 1.5;
+}
+
+function displayRound11() {
+    displayRound(checkpoints[10], platforms[10]);
+
+    walls[10].show();
+    walls[10].touch(ball);
+
+    waterZones[10].show();
+    if (waterZones[10].contains(ball)) waterZones[10].applyForce(ball);
+
+    orbAntiGravity.show();
+    orbAntiGravity.touch(ball);
+
+    image(imgOrbAntiGravity, 50, 360, 50, 50);
+
+    push();
+    textFont('Bahnschrift Condensed');
+    textStyle(BOLD);
+    textAlign(LEFT);
+    if (!orbAntiGravity.isCollected) {
+        fill(120, 32, 110);
+    } else {
+        fill('green');
+    }
+    textSize(20);
+    text("Perks of Round 11", 50, 350);
+    textSize(22);
+    text("Antigravity", 50, 440);
+    textStyle(NORMAL);
+    textSize(20);
+    text("You will be able to customise\nthe gravity so that entities\nfall upwards in the sandbox.", 50, 470);
+    textSize(16);
+    text("If you've already acquired the perk,\nyou'll lose it upon retrying this round.", 50, 560);
+    pop();
 }
