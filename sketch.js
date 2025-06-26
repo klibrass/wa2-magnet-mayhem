@@ -8,11 +8,15 @@ let inGame = false; // Temporary, to be replaced with timer.
 let isRoundComplete = false;
 let preInGame = "start"; // State before entering game.
 let inGameStage = "PRELIMINARY";
+let isSandboxPaused = false;
 
 let platforms = [];
 let checkpoints = [];
 let walls = [];
 let waterZones = [];
+
+let sandboxEmojiButtons = [];
+let sandboxBalls = [];
 
 function preload() {
     imgCheckpoint = loadImage('/assets/checkpoint.png');
@@ -20,6 +24,7 @@ function preload() {
     imgOrbColorPicker = loadImage('/assets/rainbow orb.png');
     imgOrbWind = loadImage('/assets/wind orb.png');
     imgOrbAntiGravity = loadImage('/assets/antigravity orb.png');
+    imgOrbMovingPlatform = loadImage('/assets/moving platform orb.png');
 }
 
 function setup() {
@@ -40,7 +45,11 @@ function draw() {
     updateMagnetColors();
 
     if (!inGame) {
-        handleMenus();
+        if (round != 255) {
+            handleMenus();
+        } else {
+            handleSandbox();
+        }
     } else {
         handleGame();
     }
@@ -48,22 +57,44 @@ function draw() {
 
 function mouseClicked() {
     if (inGame) {
-        if (buttonReload.containsMouse() || (buttonReloadComplete.containsMouse() && isRoundComplete)) {
+        const shouldReload = buttonReload.containsMouse() || (buttonReloadComplete.containsMouse() && isRoundComplete);
+        
+        if (shouldReload) {
             reloadCurrentRound();
             cursor(ARROW);
-        } else if (emojiButtonQuit.containsMouse()) {
+            return;
+        }
+
+        if (emojiButtonQuit.containsMouse()) {
             inGame = false;
             preInGame = "start";
-        } else if (buttonNextRound.containsMouse() && isRoundComplete) {
-            const nextRoundLoader = window[`loadRound${round + 1}`];
-            if (typeof nextRoundLoader === "function") {
-                nextRoundLoader();
-            }
-        } else {
-            handleMagnetAddition();
+            return;
         }
+
+        const nextRoundClicked = buttonNextRound.containsMouse() && isRoundComplete;
+
+        if (nextRoundClicked) {
+            if (round !== 12) {
+                const nextRoundLoader = window[`loadRound${round + 1}`];
+                if (typeof nextRoundLoader === "function") {
+                    nextRoundLoader();
+                }
+            } else {
+                inGame = false;
+                preInGame = "SANDBOX";
+                displaySandbox();
+            }
+            cursor(ARROW);
+            return;
+        }
+
+        handleMagnetAddition();
     } else {
-        handleMenuClicks();
+        if (preInGame !== "SANDBOX") {
+            handleMenuClicks();
+        } else {
+            handleSandboxClicks();
+        }
     }
 }
 
@@ -87,6 +118,19 @@ function handleGame() {
     if (isRoundComplete) displayCompleteScreen();
     handleButtonHover(emojiButtonQuit);
     handleKeyPress();
+}
+
+function handleSandbox() {
+    displaySandbox();
+
+    drawHoverEffect();
+    handleButtonHover(emojiButtonQuit);
+    handleKeyPress();
+
+    if (!isSandboxPaused) {
+        handleForces();
+        handleSandboxBalls();
+    }
 }
 
 function handleRoundText() {
@@ -123,8 +167,12 @@ function handleMenuClicks() {
 
     if (buttonGoToLatestRound.containsMouse()) {
         inGame = true;
-        loadRound11();
+        loadRound12();
     }
+}
+
+function handleSandboxClicks() {
+
 }
 
 function updateMagnetColors() {
@@ -150,6 +198,10 @@ function handleBall() {
         ball.acceleration.mult(0);
         ball.velocity.mult(0);
     }
+}
+
+function handleSandboxBalls() {
+
 }
 
 function displayBallVelocity() {
@@ -217,7 +269,8 @@ function setupPlatformsAndCheckpoints() {
         [new Platform(0, 450, width, 150)],
         [new Platform(50, 200, 150, 30), new Platform(500, 500, 300, 100)],
         [new Platform(350, 200, 100, 30), new Platform(350, 500, 100, 30)],
-        [new Platform(500, 0, 300, 100)]
+        [new Platform(500, 0, 300, 100)],
+        [new Platform(50, 200, 100, 30), new Platform(650, 160, 100, 30), new Platform(50, 550, 2110, 30), new Platform(530, 160, 120, 30), new Platform (655, 550, 165, 50)]
     ];
 
     checkpoints = [
@@ -231,6 +284,7 @@ function setupPlatformsAndCheckpoints() {
         new Checkpoint(680, 400),
         new Checkpoint(500, 450),
         new Checkpoint(380, 450),
+        new Checkpoint(700, 110),
         new Checkpoint(700, 110)
     ];
 
@@ -245,7 +299,8 @@ function setupPlatformsAndCheckpoints() {
         [new Wall(0, 0, 50, height), new Wall(750, 0, 50, height)],
         new Wall(width * 0.5 - 30, 370, 60, 230),
         null,
-        new Wall (300, 300, 200, 300)
+        new Wall(300, 300, 200, 300),
+        new Wall(325, 0, 150, 350) 
     ];
 
     waterZones = [
@@ -259,7 +314,8 @@ function setupPlatformsAndCheckpoints() {
         null,
         null,
         null,
-        new WaterZone(0, 0, width, height)
+        new WaterZone(0, 0, width, height),
+        null
     ];
 }
 
@@ -273,10 +329,31 @@ function setupButtons() {
     buttonReloadComplete = new Button(width * 0.5, height * 0.5 + 80, 80, 30, 96, 36, "RESTART");
 
     emojiButtonQuit = new EmojiButton(5, 5, 15, 20, "❌", "QUIT", [255, 99, 120]);
+
+    emojiButtonNewBall = new EmojiButton(5, 30, 25, 30, "⚪", "ADD BALL", [255, 255, 255]);
+    emojiButtonNewPlatform = new EmojiButton(5, 35, 25, 30, "📶", "ADD PLATFORM", [0, 210, 255]);
+    emojiButtonNewMagnet = new EmojiButton(5, 55, 25, 30, "🧲", "ADD MAGNET", [255, 99, 120]);
+    emojiButtonPause = new EmojiButton(5, 80, 25, 30, "⏸️", "PAUSE", [0, 210, 255]);
+    emojiButtonWind = new EmojiButton(5, 105, 25, 30, "🌬️", "WIND", [0, 210, 255]);
+    emojiButtonAntiGravity = new EmojiButton(5, 130, 25, 30, "🪐", "ANTIGRAVITY", [228, 218, 0]);
+    emojiButtonMovingPlatform = new EmojiButton(5, 155, 25, 30, "🛠️", "MOVING PLATFORM", [200, 200, 200]);
+    emojiButtonColorPicker = new EmojiButton(5, 180, 25, 30, "🌈", "COLOUR PICKER", [255, 255, 255]);
+
+    sandboxEmojiButtons = [
+        emojiButtonNewBall,
+        emojiButtonNewPlatform,
+        emojiButtonNewMagnet,
+        emojiButtonPause,
+        emojiButtonWind,
+        emojiButtonAntiGravity,
+        emojiButtonMovingPlatform,
+        emojiButtonColorPicker
+    ];
 }
 
 function setupCollectibles() {
     orbColorPicker = new Orb(700, 470, 20, imgOrbColorPicker);
     orbWind = new Orb(width * 0.5, 350, 20, imgOrbWind);
     orbAntiGravity = new Orb(600, 350, 20, imgOrbAntiGravity);
+    orbMovingPlatform = new Orb(250, 320, 20, imgOrbMovingPlatform);
 }

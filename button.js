@@ -72,6 +72,7 @@ class EmojiButton {
 
     show() {
         push();
+        rectMode(CENTER);
         fill(0, 0, 0, 0);
         noStroke();
         square(this.x, this.y, this.size);
@@ -101,8 +102,9 @@ class EmojiButton {
             push();
             fill(this.splashTextColor);
             textStyle(NORMAL);
+            textAlign(LEFT);
             textFont('Bahnschrift Condensed', this.size);
-            text(this.splashText, this.x + this.size * 2, this.y + this.size);
+            text(this.splashText, this.x + this.size * 1.4, this.y + this.size);
             pop();
         }
     }

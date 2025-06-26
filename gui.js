@@ -424,3 +424,83 @@ function displayRound11() {
     text("If you've already acquired the perk,\nyou'll lose it upon retrying this round.", 50, 560);
     pop();
 }
+
+function loadRound12() {
+    loadRound(12, 6, 0, 100, 100);
+    orbMovingPlatform.isCollected = false;
+    magnetStrengthCo = 1;
+}
+
+function displayRound12() {
+    displayRound(checkpoints[11], platforms[11]);
+
+    walls[11].show();
+    walls[11].touch(ball);
+
+    orbMovingPlatform.show();
+    orbMovingPlatform.touch(ball);
+
+    image(imgOrbMovingPlatform, 50, 280, 50, 50);
+
+    push();
+    textFont('Bahnschrift Condensed');
+    textStyle(BOLD);
+    textAlign(LEFT);
+    if (!orbMovingPlatform.isCollected) {
+        fill(223, 113, 50);
+    } else {
+        fill('green');
+    }
+    textSize(20);
+    text("Perks of Round 12", 50, 270);
+    textSize(22);
+    text("Moving platform", 50, 360);
+    textStyle(NORMAL);
+    textSize(20);
+    text("You will be able to create\nplatforms that move\nalternatively in the sandbox.", 50, 390);
+    textSize(16);
+    text("If you've already acquired the perk,\nyou'll lose it upon retrying this round.", 50, 480);
+    pop();
+
+    platforms[11][2].x = 290 + sin(millis() * 0.001) * 240;
+    platforms[11][3].y = 300 + sin(millis() * 0.001) * 140;
+}
+
+function displaySandbox() {
+    inGame = false;
+    inGameStage = "SANDBOX";
+    magnetStrengthCo = 1;
+    wind = createVector(0, 0);
+
+    magnets = [];
+    round = 255;
+
+    displaySandboxToolbar();
+}
+
+function displaySandboxToolbar() {
+    push();
+    noStroke();
+
+    // Vertical rectangle on the left
+    const toolbarX = 20;
+    const toolbarY = 30;
+    const toolbarWidth = 50;
+    const toolbarHeight = sandboxEmojiButtons.length * 40 + 20;
+    fill(120);
+    rect(toolbarX - 3, toolbarY + 3, toolbarWidth, toolbarHeight, 10);
+    fill(255);
+    rect(toolbarX, toolbarY, toolbarWidth, toolbarHeight, 8);
+
+    // Arrange emoji buttons vertically inside the rectangle
+    let index = 0;
+    for (let sandboxEmojiButton of sandboxEmojiButtons) {
+        sandboxEmojiButton.x = toolbarX - 11 + toolbarWidth / 2;
+        sandboxEmojiButton.y = toolbarY + 11 + index * 40;
+        sandboxEmojiButton.show();
+        handleButtonHover(sandboxEmojiButton);
+        index++;
+    }
+
+    pop();
+}
