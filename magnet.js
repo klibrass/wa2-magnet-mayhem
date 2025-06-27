@@ -19,12 +19,7 @@ class Magnet {
     }
 
     containsMouse() {
-        return (
-            this.position.x - this.radius * 0.5 < mouseX &&
-            this.position.x + this.radius * 0.5 > mouseX &&
-            this.position.y - this.radius * 0.5 < mouseY &&
-            this.position.y + this.radius * 0.5 > mouseY
-        )
+        return dist(this.position.x, this.position.y, mouseX, mouseY) < this.radius;
     }
 
     changeColorHovered() {
@@ -60,7 +55,66 @@ class Magnet {
 
         let strength = (this.G * magnetStrengthCo * this.mass * ball.mass) / (distance * distance)
         force.mult(strength);
-        console.log(strength);
+
+        return force;
+    }
+}
+
+class SandboxMagnet {
+    constructor(x, y, attractionStatus, radius, G = 1) {
+        this.position = createVector(x, y);
+        this.G = G;
+        this.attractionStatus = attractionStatus;
+        this.color = magnetColor;
+        this.radius = radius;
+        this.mass = radius / 2;
+    }
+
+    show() {
+        push();
+        strokeWeight(2);
+        fill(this.color);
+        circle(this.position.x, this.position.y, this.radius);
+        pop();
+    }
+
+    containsMouse() {
+        return dist(this.position.x, this.position.y, mouseX, mouseY) < this.radius;
+    }
+
+    changeColorHovered() {
+        if (this.containsMouse()) {
+            this.color =
+            this.attractionStatus == -1
+                ? [255, 176, 176]
+                : [176, 176, 255];
+        } else {
+            this.color =
+            this.attractionStatus == -1
+                ? [255, 0, 0]
+                : [0, 0, 255];
+        }
+    }
+
+    calculateAttraction(ball) {
+        return this.calculateForce(ball, true);
+    }
+
+    calculateRepulsion(ball) {
+        return this.calculateForce(ball, false);
+    }
+
+    calculateForce(ball, doesAttract) {
+        let force = doesAttract
+            ? p5.Vector.sub(this.position, ball.position)
+            : p5.Vector.sub(ball.position, this.position);
+    
+        let distance = sqrt(force.mag());
+        distance = constrain(distance, 5, 15);
+        force.normalize();
+
+        let strength = (this.G * magnetStrengthCo * this.mass * ball.mass) / (distance * distance)
+        force.mult(strength);
 
         return force;
     }
@@ -92,4 +146,21 @@ function addNewMagnet() {
         magnets.push(new Magnet(mouseX, mouseY, attractorOnClick, 20));
         magnetNumber.rep -= 1;
     }
+}
+
+function getHoveredSandboxMagnet() {
+    for (let sandboxMagnet of sandboxMagnets) {
+        if (sandboxMagnet.containsMouse()) {
+            return sandboxMagnet;
+        }
+    }
+    return null; // No magnet hovered
+}
+
+function removeSandboxMagnet(sandboxMagnet) {
+    sandboxMagnets.splice(sandboxMagnets.indexOf(sandboxMagnet), 1);
+}
+
+function addNewSandboxMagnet() {
+    sandboxMagnets.push(new SandboxMagnet(mouseX, mouseY, attractorOnClick, 20));
 }

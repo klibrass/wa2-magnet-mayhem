@@ -78,10 +78,23 @@ class EmojiButton {
         square(this.x, this.y, this.size);
 
         fill(0, 0, 0, 255);
-        textAlign(CENTER);
+        textAlign(CENTER, BASELINE);
         textStyle(NORMAL);
         textSize(this.size);
         text(this.emoji, this.x + this.size * 0.5, this.y + this.size);
+
+        // Draw lock if this button is locked
+        let locked = false;
+        if (this.key === "emojiButtonWind" && typeof isWindUnlocked !== "undefined" && !isWindUnlocked) locked = true;
+        if (this.key === "emojiButtonAntiGravity" && typeof isAntiGravityUnlocked !== "undefined" && !isAntiGravityUnlocked) locked = true;
+        if (this.key === "emojiButtonMovingPlatform" && typeof isMovingPlatformUnlocked !== "undefined" && !isMovingPlatformUnlocked) locked = true;
+        if (this.key === "emojiButtonColorPicker" && typeof isColorPickerUnlocked !== "undefined" && !isColorPickerUnlocked) locked = true;
+
+        if (locked) {
+            textSize(18);
+            textAlign(RIGHT, TOP);
+            text("🔒", this.x + this.size * 0.5 + this.size * 0.4, this.y - this.size * 0.5 + 6);
+        }
         pop();
     }
 

@@ -8,15 +8,16 @@ let inGame = false; // Temporary, to be replaced with timer.
 let isRoundComplete = false;
 let preInGame = "start"; // State before entering game.
 let inGameStage = "PRELIMINARY";
-let isSandboxPaused = false;
 
 let platforms = [];
 let checkpoints = [];
 let walls = [];
 let waterZones = [];
 
-let sandboxEmojiButtons = [];
-let sandboxBalls = [];
+let isWindUnlocked = false;
+let isAntiGravityUnlocked = false;
+let isMovingPlatformUnlocked = false;
+let isColorPickerUnlocked = false;
 
 function preload() {
     imgCheckpoint = loadImage('/assets/checkpoint.png');
@@ -65,11 +66,7 @@ function mouseClicked() {
             return;
         }
 
-        if (emojiButtonQuit.containsMouse()) {
-            inGame = false;
-            preInGame = "start";
-            return;
-        }
+        handleQuitButton();
 
         const nextRoundClicked = buttonNextRound.containsMouse() && isRoundComplete;
 
@@ -94,6 +91,7 @@ function mouseClicked() {
             handleMenuClicks();
         } else {
             handleSandboxClicks();
+            handleQuitButton();
         }
     }
 }
@@ -101,6 +99,7 @@ function mouseClicked() {
 function handleMenus() {
     if (preInGame === "start") startMenu();
     if (preInGame === "instructions") instructionsMenu();
+    if (preInGame === "SANDBOX") displaySandbox();
 }
 
 function handleGame() {
@@ -118,19 +117,6 @@ function handleGame() {
     if (isRoundComplete) displayCompleteScreen();
     handleButtonHover(emojiButtonQuit);
     handleKeyPress();
-}
-
-function handleSandbox() {
-    displaySandbox();
-
-    drawHoverEffect();
-    handleButtonHover(emojiButtonQuit);
-    handleKeyPress();
-
-    if (!isSandboxPaused) {
-        handleForces();
-        handleSandboxBalls();
-    }
 }
 
 function handleRoundText() {
@@ -166,13 +152,19 @@ function handleMenuClicks() {
     }
 
     if (buttonGoToLatestRound.containsMouse()) {
-        inGame = true;
-        loadRound12();
+        preInGame = "SANDBOX";
+        cursor(ARROW);
     }
 }
 
-function handleSandboxClicks() {
-
+function handleQuitButton() {
+    if (emojiButtonQuit.containsMouse()) {
+        inGame = false;
+        round = 0;
+        magnets = [];
+        preInGame = "start";
+        return;
+    }
 }
 
 function updateMagnetColors() {
@@ -198,10 +190,6 @@ function handleBall() {
         ball.acceleration.mult(0);
         ball.velocity.mult(0);
     }
-}
-
-function handleSandboxBalls() {
-
 }
 
 function displayBallVelocity() {
@@ -333,21 +321,38 @@ function setupButtons() {
     emojiButtonNewBall = new EmojiButton(5, 30, 25, 30, "⚪", "ADD BALL", [255, 255, 255]);
     emojiButtonNewPlatform = new EmojiButton(5, 35, 25, 30, "📶", "ADD PLATFORM", [0, 210, 255]);
     emojiButtonNewMagnet = new EmojiButton(5, 55, 25, 30, "🧲", "ADD MAGNET", [255, 99, 120]);
-    emojiButtonPause = new EmojiButton(5, 80, 25, 30, "⏸️", "PAUSE", [0, 210, 255]);
     emojiButtonWind = new EmojiButton(5, 105, 25, 30, "🌬️", "WIND", [0, 210, 255]);
     emojiButtonAntiGravity = new EmojiButton(5, 130, 25, 30, "🪐", "ANTIGRAVITY", [228, 218, 0]);
     emojiButtonMovingPlatform = new EmojiButton(5, 155, 25, 30, "🛠️", "MOVING PLATFORM", [200, 200, 200]);
     emojiButtonColorPicker = new EmojiButton(5, 180, 25, 30, "🌈", "COLOUR PICKER", [255, 255, 255]);
 
+    emojiButtonPause = new EmojiButton(770, 30, 25, 30, "⏸️", "PAUSE", [0, 210, 255]);
+    emojiButtonDelete = new EmojiButton(770, 35, 25, 30, "🚫", "DELETE", [255, 99, 120]);
+    emojiButtonReset = new EmojiButton(770, 60, 25, 30, "🔄", "RESET", [120, 120, 255]);
+
     sandboxEmojiButtons = [
         emojiButtonNewBall,
         emojiButtonNewPlatform,
         emojiButtonNewMagnet,
-        emojiButtonPause,
         emojiButtonWind,
         emojiButtonAntiGravity,
         emojiButtonMovingPlatform,
         emojiButtonColorPicker
+    ];
+
+    emojiButtonNewBall.key = "emojiButtonNewBall";
+    emojiButtonNewPlatform.key = "emojiButtonNewPlatform";
+    emojiButtonNewMagnet.key = "emojiButtonNewMagnet";
+    emojiButtonWind.key = "emojiButtonWind";
+    emojiButtonAntiGravity.key = "emojiButtonAntiGravity";
+    emojiButtonMovingPlatform.key = "emojiButtonMovingPlatform";
+    emojiButtonColorPicker.key = "emojiButtonColorPicker";
+    emojiButtonReset.key = "emojiButtonReset";
+
+    sandboxSimulationEmojiButtons = [
+        emojiButtonPause,
+        emojiButtonDelete,
+        emojiButtonReset
     ];
 }
 

@@ -332,6 +332,7 @@ function displayRound9() {
         fill(135, 135, 255);
     } else {
         fill('green');
+        isColorPickerUnlocked = true;
     }
     textSize(20);
     text("Perks of Round 9", 50, 290);
@@ -370,6 +371,7 @@ function displayRound10() {
         fill(135, 135, 255);
     } else {
         fill('green');
+        isWindUnlocked = true;
     }
     textSize(20);
     text("Perks of Round 10", 50, 290);
@@ -412,6 +414,7 @@ function displayRound11() {
         fill(120, 32, 110);
     } else {
         fill('green');
+        isAntiGravityUnlocked = true;
     }
     textSize(20);
     text("Perks of Round 11", 50, 350);
@@ -450,6 +453,7 @@ function displayRound12() {
         fill(223, 113, 50);
     } else {
         fill('green');
+        isMovingPlatformUnlocked = true;
     }
     textSize(20);
     text("Perks of Round 12", 50, 270);
@@ -500,6 +504,24 @@ function displaySandboxToolbar() {
         sandboxEmojiButton.show();
         handleButtonHover(sandboxEmojiButton);
         index++;
+    }
+
+    const simulationToolbarX = 20;
+    const simulationToolbarY = toolbarY + toolbarHeight + 30;
+    const simulationToolbarWidth = 50;
+    const simulationToolbarHeight = sandboxSimulationEmojiButtons.length * 40 + 20;
+    fill(120);
+    rect(simulationToolbarX - 3, simulationToolbarY + 3, simulationToolbarWidth, simulationToolbarHeight, 10);
+    fill(255);
+    rect(simulationToolbarX, simulationToolbarY, simulationToolbarWidth, simulationToolbarHeight, 8);
+
+    let indexSimulation = 0;
+    for (let sandboxSimulationEmojiButton of sandboxSimulationEmojiButtons) {
+        sandboxSimulationEmojiButton.x = simulationToolbarX - 11 + simulationToolbarWidth / 2;
+        sandboxSimulationEmojiButton.y = simulationToolbarY + 11 + indexSimulation * 40;
+        sandboxSimulationEmojiButton.show();
+        handleButtonHover(sandboxSimulationEmojiButton);
+        indexSimulation++;
     }
 
     pop();
