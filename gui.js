@@ -479,6 +479,7 @@ function displaySandbox() {
     magnets = [];
     round = 255;
 
+    resetSandbox();
     displaySandboxToolbar();
 }
 

@@ -1,63 +1,72 @@
-let round = 0;
-let magnets = [];
-let magnetNumber = { att: 0, rep: 0 };
-let magnetColor, magnetColorHover;
-let attractorOnClick = -1; // -1 is repulsion
+// --- Game State ---
+let round = 0; // Current round number
+let inGame = false; // Whether the player is in a round
+let isRoundComplete = false; // Whether the current round is complete
+let preInGame = "start"; // Menu state: "start", "instructions", "SANDBOX"
+let inGameStage = "PRELIMINARY"; // Stage label for display
 
-let inGame = false; // Temporary, to be replaced with timer.
-let isRoundComplete = false;
-let preInGame = "start"; // State before entering game.
-let inGameStage = "PRELIMINARY";
+// --- Physics and Objects ---
+let magnets = []; // Array of magnets in the current round
+let magnetNumber = { att: 0, rep: 0 }; // Number of attractor/repulsor magnets
+let magnetColor, magnetColorHover; // Magnet colors for UI
+let attractorOnClick = -1; // -1: repulsion, 1: attraction
 
-let platforms = [];
-let checkpoints = [];
-let walls = [];
-let waterZones = [];
+let platforms = []; // Array of platforms for the round
+let checkpoints = []; // Array of checkpoints for the round
+let walls = []; // Array of walls for the round
+let waterZones = []; // Array of water zones for the round
 
-let isWindUnlocked = false;
-let isAntiGravityUnlocked = false;
-let isMovingPlatformUnlocked = false;
-let isColorPickerUnlocked = false;
+// --- Unlockables ---
+let isWindUnlocked = false; // Wind feature unlocked
+let isAntiGravityUnlocked = false; // Anti-gravity feature unlocked
+let isMovingPlatformUnlocked = false; // Moving platform feature unlocked
+let isColorPickerUnlocked = false; // Color picker feature unlocked
 
+// --- Asset Preloading ---
 function preload() {
-    imgCheckpoint = loadImage('/assets/checkpoint.png');
-    imgComplete = loadImage('/assets/complete screen.png');
-    imgOrbColorPicker = loadImage('/assets/rainbow orb.png');
-    imgOrbWind = loadImage('/assets/wind orb.png');
-    imgOrbAntiGravity = loadImage('/assets/antigravity orb.png');
-    imgOrbMovingPlatform = loadImage('/assets/moving platform orb.png');
+    imgCheckpoint = loadImage('/assets/checkpoint.png'); // Checkpoint image
+    imgComplete = loadImage('/assets/complete screen.png'); // Complete screen image
+    imgOrbColorPicker = loadImage('/assets/rainbow orb.png'); // Color picker orb image
+    imgOrbWind = loadImage('/assets/wind orb.png'); // Wind orb image
+    imgOrbAntiGravity = loadImage('/assets/antigravity orb.png'); // Anti-gravity orb image
+    imgOrbMovingPlatform = loadImage('/assets/moving platform orb.png'); // Moving platform orb image
 }
 
+// --- Setup Function ---
 function setup() {
-    createCanvas(800, 600);
+    createCanvas(800, 600); // Set canvas size
 
-    ball = new Ball(120, 50, 20);
-    gravity = createVector(0, 3);
-    wind = createVector(0, 0);
+    ball = new Ball(120, 50, 20); // Create the main ball
+    gravity = createVector(0, 3); // Set gravity vector
+    wind = createVector(0, 0); // Set wind vector (default off)
 
-    setupPlatformsAndCheckpoints();
-    setupButtons();
-    setupCollectibles();
+    setupPlatformsAndCheckpoints(); // Initialize platforms, checkpoints, walls, water
+    setupButtons(); // Initialize all UI buttons
+    setupCollectibles(); // Initialize collectible orbs
 }
 
+// --- Main Draw Loop ---
 function draw() {
-    background(220, 235, 240);
-    cursor(ARROW);
-    updateMagnetColors();
+    background(220, 235, 240); // Set background color
+    cursor(ARROW); // Default cursor
+    updateMagnetColors(); // Update magnet color based on mode
 
+    // Menu or game logic
     if (!inGame) {
         if (round != 255) {
-            handleMenus();
+            handleMenus(); // Show menus
         } else {
-            handleSandbox();
+            handleSandbox(); // Show sandbox
         }
     } else {
-        handleGame();
+        handleGame(); // Run game logic
     }
 }
 
+// --- Mouse Click Handler ---
 function mouseClicked() {
     if (inGame) {
+        // Check if reload or complete reload button is clicked
         const shouldReload = buttonReload.containsMouse() || (buttonReloadComplete.containsMouse() && isRoundComplete);
         
         if (shouldReload) {
@@ -66,17 +75,20 @@ function mouseClicked() {
             return;
         }
 
-        handleQuitButton();
+        handleQuitButton(); // Handle quit button
 
+        // Check if next round button is clicked and round is complete
         const nextRoundClicked = buttonNextRound.containsMouse() && isRoundComplete;
 
         if (nextRoundClicked) {
             if (round !== 12) {
+                // Load next round if not last
                 const nextRoundLoader = window[`loadRound${round + 1}`];
                 if (typeof nextRoundLoader === "function") {
                     nextRoundLoader();
                 }
             } else {
+                // If last round, go to sandbox
                 inGame = false;
                 preInGame = "SANDBOX";
                 displaySandbox();
@@ -85,8 +97,9 @@ function mouseClicked() {
             return;
         }
 
-        handleMagnetAddition();
+        handleMagnetAddition(); // Add or remove magnets
     } else {
+        // Menu or sandbox click handling
         if (preInGame !== "SANDBOX") {
             handleMenuClicks();
         } else {
@@ -96,29 +109,32 @@ function mouseClicked() {
     }
 }
 
+// --- Menu Display Handler ---
 function handleMenus() {
     if (preInGame === "start") startMenu();
     if (preInGame === "instructions") instructionsMenu();
     if (preInGame === "SANDBOX") displaySandbox();
 }
 
+// --- Main Game Handler ---
 function handleGame() {
-    displayRounds();
-    buttonReload.show();
+    displayRounds(); // Show round-specific visuals
+    buttonReload.show(); // Show reload button
     if (!isRoundComplete) handleButtonHover(buttonReload);
 
-    handleRoundText();
-    handleForces();
-    displayMagnetNumber();
-    displayMagnetStrengthCo();
-    drawHoverEffect();
-    handleBall();
+    handleRoundText(); // Show round text
+    handleForces(); // Apply forces to ball
+    displayMagnetNumber(); // Show magnet count
+    displayMagnetStrengthCo(); // Show magnet strength
+    drawHoverEffect(); // Draw hover effect for magnets
+    handleBall(); // Update and draw ball
 
-    if (isRoundComplete) displayCompleteScreen();
-    handleButtonHover(emojiButtonQuit);
-    handleKeyPress();
+    if (isRoundComplete) displayCompleteScreen(); // Show complete screen
+    handleButtonHover(emojiButtonQuit); // Hover effect for quit button
+    handleKeyPress(); // Handle key presses
 }
 
+// --- Round Text Display ---
 function handleRoundText() {
     push();
     textAlign(CENTER);
@@ -135,6 +151,7 @@ function handleRoundText() {
     pop();
 }
 
+// --- Menu Click Handler ---
 function handleMenuClicks() {
     if (buttonStart.containsMouse()) {
         inGameStage = "PRELIMINARY";
@@ -157,6 +174,7 @@ function handleMenuClicks() {
     }
 }
 
+// --- Quit Button Handler ---
 function handleQuitButton() {
     if (emojiButtonQuit.containsMouse()) {
         inGame = false;
@@ -167,11 +185,13 @@ function handleQuitButton() {
     }
 }
 
+// --- Magnet Color Update ---
 function updateMagnetColors() {
     magnetColor = attractorOnClick === 1 ? [0, 0, 255] : [255, 0, 0];
     magnetColorHover = attractorOnClick === 1 ? [0, 0, 255, 128] : [255, 0, 0, 128];
 }
 
+// --- Draw Magnet Hover Effect ---
 function drawHoverEffect() {
     push();
     fill(magnetColorHover);
@@ -180,6 +200,7 @@ function drawHoverEffect() {
     pop();
 }
 
+// --- Ball Handler ---
 function handleBall() {
     if (!isRoundComplete) {
         ball.show();
@@ -192,6 +213,7 @@ function handleBall() {
     }
 }
 
+// --- Ball Velocity Display ---
 function displayBallVelocity() {
     fill(10, 180, 70);
     textFont('Bahnschrift Semicondensed', 20);
@@ -199,6 +221,7 @@ function displayBallVelocity() {
     text(`v: ${floor(ball.velocity.mag())} unit/s`, ball.position.x, ball.position.y - 40);
 }
 
+// --- Apply Forces to Ball ---
 function handleForces() {
     magnets.forEach(magnet => {
         magnet.show();
@@ -214,12 +237,14 @@ function handleForces() {
     ball.applyForce(wind);
 }
 
+// --- Key Press Handler ---
 function handleKeyPress() {
-    if (keyIsDown(65)) attractorOnClick = 1; // 'A' key
-    if (keyIsDown(82)) attractorOnClick = -1; // 'R' key
-    if (keyIsDown(68)) magnets = []; // 'D' key
+    if (keyIsDown(65)) attractorOnClick = 1; // 'A' key for attractor
+    if (keyIsDown(82)) attractorOnClick = -1; // 'R' key for repulsor
+    if (keyIsDown(68)) magnets = []; // 'D' key to clear magnets
 }
 
+// --- Magnet Addition/Removal Handler ---
 function handleMagnetAddition() {
     const hoveredMagnet = getHoveredMagnet();
     if (hoveredMagnet && !isRoundComplete) {
@@ -229,6 +254,7 @@ function handleMagnetAddition() {
     }
 }
 
+// --- Reload Current Round ---
 function reloadCurrentRound() {
     const roundLoader = window[`loadRound${round}`];
     if (typeof roundLoader === "function") {
@@ -238,6 +264,7 @@ function reloadCurrentRound() {
     }
 }
 
+// --- Display Round-Specific Visuals ---
 function displayRounds() {
     const roundDisplayFunction = window[`displayRound${round}`];
     if (typeof roundDisplayFunction === "function") {
@@ -245,6 +272,7 @@ function displayRounds() {
     }
 }
 
+// --- Setup Platforms, Checkpoints, Walls, Water ---
 function setupPlatformsAndCheckpoints() {
     platforms = [
         [new Platform(0, 300, 800, 300)],
@@ -258,7 +286,7 @@ function setupPlatformsAndCheckpoints() {
         [new Platform(50, 200, 150, 30), new Platform(500, 500, 300, 100)],
         [new Platform(350, 200, 100, 30), new Platform(350, 500, 100, 30)],
         [new Platform(500, 0, 300, 100)],
-        [new Platform(50, 200, 100, 30), new Platform(650, 160, 100, 30), new Platform(50, 550, 2110, 30), new Platform(530, 160, 120, 30), new Platform (655, 550, 165, 50)]
+        [new Platform(50, 200, 100, 30), new Platform(650, 160, 100, 30), new Platform(50, 550, 200, 30), new Platform(530, 160, 120, 30), new Platform (655, 550, 165, 50)]
     ];
 
     checkpoints = [
@@ -307,17 +335,19 @@ function setupPlatformsAndCheckpoints() {
     ];
 }
 
+// --- Setup All Buttons ---
 function setupButtons() {
+    // Main menu buttons
     buttonStart = new Button(width * 0.5, height * 0.5, 80, 30, 96, 36, "START");
     buttonInstructions = new Button(width * 0.5, height * 0.65, 115, 30, 138, 36, "INSTRUCTIONS");
-    buttonGoToLatestRound = new Button(width * 0.5, height * 0.8, 80, 30, 96, 36, "SKIP")
+    buttonGoToLatestRound = new Button(width * 0.5, height * 0.8, 80, 30, 96, 36, "SKIP");
     buttonStartMenu = new Button(width - 120, height - 60, 80, 30, 88, 33, "BACK");
     buttonReload = new Button(width - 115, 55, 85, 25, 93.5, 27.5, "RESTART");
     buttonNextRound = new Button(width * 0.5, height * 0.5, 80, 30, 96, 36, "NEXT");
     buttonReloadComplete = new Button(width * 0.5, height * 0.5 + 80, 80, 30, 96, 36, "RESTART");
 
+    // Emoji buttons for sandbox/tools
     emojiButtonQuit = new EmojiButton(5, 5, 15, 20, "❌", "QUIT", [255, 99, 120]);
-
     emojiButtonNewBall = new EmojiButton(5, 30, 25, 30, "⚪", "ADD BALL", [255, 255, 255]);
     emojiButtonNewPlatform = new EmojiButton(5, 35, 25, 30, "📶", "ADD PLATFORM", [0, 210, 255]);
     emojiButtonNewMagnet = new EmojiButton(5, 55, 25, 30, "🧲", "ADD MAGNET", [255, 99, 120]);
@@ -325,11 +355,21 @@ function setupButtons() {
     emojiButtonAntiGravity = new EmojiButton(5, 130, 25, 30, "🪐", "ANTIGRAVITY", [228, 218, 0]);
     emojiButtonMovingPlatform = new EmojiButton(5, 155, 25, 30, "🛠️", "MOVING PLATFORM", [200, 200, 200]);
     emojiButtonColorPicker = new EmojiButton(5, 180, 25, 30, "🌈", "COLOUR PICKER", [255, 255, 255]);
-
     emojiButtonPause = new EmojiButton(770, 30, 25, 30, "⏸️", "PAUSE", [0, 210, 255]);
     emojiButtonDelete = new EmojiButton(770, 35, 25, 30, "🚫", "DELETE", [255, 99, 120]);
     emojiButtonReset = new EmojiButton(770, 60, 25, 30, "🔄", "RESET", [120, 120, 255]);
 
+    // Assign keys for identification
+    emojiButtonNewBall.key = "emojiButtonNewBall";
+    emojiButtonNewPlatform.key = "emojiButtonNewPlatform";
+    emojiButtonNewMagnet.key = "emojiButtonNewMagnet";
+    emojiButtonWind.key = "emojiButtonWind";
+    emojiButtonAntiGravity.key = "emojiButtonAntiGravity";
+    emojiButtonMovingPlatform.key = "emojiButtonMovingPlatform";
+    emojiButtonColorPicker.key = "emojiButtonColorPicker";
+    emojiButtonReset.key = "emojiButtonReset";
+
+    // Group buttons for sandbox toolbars
     sandboxEmojiButtons = [
         emojiButtonNewBall,
         emojiButtonNewPlatform,
@@ -340,15 +380,6 @@ function setupButtons() {
         emojiButtonColorPicker
     ];
 
-    emojiButtonNewBall.key = "emojiButtonNewBall";
-    emojiButtonNewPlatform.key = "emojiButtonNewPlatform";
-    emojiButtonNewMagnet.key = "emojiButtonNewMagnet";
-    emojiButtonWind.key = "emojiButtonWind";
-    emojiButtonAntiGravity.key = "emojiButtonAntiGravity";
-    emojiButtonMovingPlatform.key = "emojiButtonMovingPlatform";
-    emojiButtonColorPicker.key = "emojiButtonColorPicker";
-    emojiButtonReset.key = "emojiButtonReset";
-
     sandboxSimulationEmojiButtons = [
         emojiButtonPause,
         emojiButtonDelete,
@@ -356,6 +387,7 @@ function setupButtons() {
     ];
 }
 
+// --- Setup Collectible Orbs ---
 function setupCollectibles() {
     orbColorPicker = new Orb(700, 470, 20, imgOrbColorPicker);
     orbWind = new Orb(width * 0.5, 350, 20, imgOrbWind);
